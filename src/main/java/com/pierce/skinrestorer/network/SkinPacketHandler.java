@@ -351,7 +351,7 @@ public class SkinPacketHandler {
             }
 
             // Update the player's loaded chunks (the respawn clears them)
-            player.mcServer.getConfigurationManager().updateTimeAndWeatherForPlayer(player, player.worldObj);
+            player.mcServer.getConfigurationManager().updateTimeAndWeatherForPlayer(player, (net.minecraft.world.WorldServer) player.worldObj);
             player.mcServer.getConfigurationManager().syncPlayerInventory(player);
 
             PierceSkinRestorer.LOGGER.debug("Refreshed self skin view for " + player.getCommandSenderName());
