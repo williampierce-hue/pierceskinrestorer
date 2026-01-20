@@ -4,10 +4,15 @@ A **server-side only** Minecraft 1.7.10 Forge mod that restores player skins on 
 
 **No client mod required!** Works with vanilla clients and is compatible with GregTech: New Horizons (GTNH) 2.8.4.
 
+## Download
+
+**[Download Latest Release](https://github.com/williampierce-hue/pierceskinrestorer/releases/latest)**
+
 ## Features
 
 - **Server-side only** - Players don't need to install anything
 - **Works with vanilla clients** - No client mod required
+- **Instant skin updates** - See your new skin immediately, no rejoin required
 - **Command-based**: `/skin set <username>` to use any Minecraft account's skin
 - **Persistent storage** - Skin preferences survive server restarts
 - **GTNH compatible** - Tested with GregTech: New Horizons 2.8.4
@@ -45,7 +50,7 @@ When a player sets their skin, the server:
 - Java 8+ (Java 17+ recommended for GTNH 2.8.4)
 
 ### Server Installation
-1. Download `PierceSkinRestorer-1.0.0.jar`
+1. Download the latest `PierceSkinRestorer-x.x.x.jar` from [Releases](https://github.com/williampierce-hue/pierceskinrestorer/releases/latest)
 2. Place in your server's `mods/` folder
 3. Restart the server
 4. Done! Players can now use `/skin` command
@@ -56,7 +61,7 @@ When a player sets their skin, the server:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pierceskinrestorer.git
+git clone https://github.com/williampierce-hue/pierceskinrestorer.git
 cd pierceskinrestorer
 
 # Set up ForgeGradle (first time only)
@@ -66,7 +71,7 @@ cd pierceskinrestorer
 ./gradlew build
 ```
 
-The JAR will be at `build/libs/PierceSkinRestorer-1.0.0.jar`
+The JAR will be at `build/libs/PierceSkinRestorer-x.x.x.jar`
 
 ## Configuration
 
@@ -111,7 +116,6 @@ This mod is designed to be fully compatible with GTNH 2.8.4:
 
 - **Mojang usernames only** - The username must exist on Mojang's servers
 - **No custom URL skins** - Vanilla clients only download from Mojang CDN
-- **Skin updates require respawn** - Other players see your new skin after you die/rejoin
 
 ## Troubleshooting
 
