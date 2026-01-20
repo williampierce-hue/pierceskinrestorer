@@ -1,0 +1,16 @@
+[
+{
+  "modid": "pierceskinrestorer",
+  "name": "Pierce Skin Restorer",
+  "description": "Server-side skin restorer for offline mode servers. Works with vanilla clients! Compatible with GTNH.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Pierce"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

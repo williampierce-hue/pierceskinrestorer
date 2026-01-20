@@ -1,0 +1,12 @@
+# Pierce Skin Restorer Language File
+
+# Commands
+commands.skin.usage=/skin <set|clear|reload> [username]
+commands.skin.set.success=Skin set to %s
+commands.skin.set.fetching=Fetching skin for %s...
+commands.skin.set.failed=Failed to fetch skin for %s
+commands.skin.clear.success=Skin cleared
+commands.skin.reload.success=Skin reloaded
+
+# Messages
+pierceskinrestorer.skin.updated=Your skin has been updated
