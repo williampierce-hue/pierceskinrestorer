@@ -49,7 +49,10 @@ public class SkinManager {
         // Cache the skin data
         skinDataCache.put(playerUUID, skinData);
 
-        // Create and cache modified profile
+        // Apply skin to player's actual GameProfile (so they see their own skin)
+        applySkinToProfile(player.getGameProfile(), skinData);
+
+        // Create and cache modified profile for packet interception
         GameProfile modifiedProfile = createModifiedProfile(player.getGameProfile(), skinData);
         profileCache.put(playerUUID, modifiedProfile);
 
@@ -74,6 +77,9 @@ public class SkinManager {
         SkinStorage.removeSkin(playerUUID);
         skinDataCache.remove(playerUUID);
         profileCache.remove(playerUUID);
+
+        // Clear skin from player's actual GameProfile
+        clearSkinFromProfile(player.getGameProfile());
 
         // Refresh skin for all viewers (will now show default)
         SkinPacketHandler.refreshPlayerSkin(player);
@@ -102,6 +108,10 @@ public class SkinManager {
 
         // Update caches
         skinDataCache.put(playerUUID, skinData);
+
+        // Apply skin to player's actual GameProfile
+        applySkinToProfile(player.getGameProfile(), skinData);
+
         GameProfile modifiedProfile = createModifiedProfile(player.getGameProfile(), skinData);
         profileCache.put(playerUUID, modifiedProfile);
 
@@ -144,6 +154,10 @@ public class SkinManager {
                         SkinFetcher.SkinData fetchedData = SkinFetcher.fetchSkinData(skinSource);
                         if (fetchedData != null) {
                             skinDataCache.put(playerUUID, fetchedData);
+
+                            // Apply skin to player's actual GameProfile
+                            applySkinToProfile(player.getGameProfile(), fetchedData);
+
                             GameProfile modifiedProfile = createModifiedProfile(player.getGameProfile(), fetchedData);
                             profileCache.put(playerUUID, modifiedProfile);
 
@@ -154,7 +168,9 @@ public class SkinManager {
                     }
                 }, "SkinFetch-Join-" + playerName).start();
             } else {
-                // Already have cached data, create profile
+                // Already have cached data - apply to player's actual GameProfile
+                applySkinToProfile(player.getGameProfile(), skinData);
+
                 GameProfile modifiedProfile = createModifiedProfile(player.getGameProfile(), skinData);
                 profileCache.put(playerUUID, modifiedProfile);
             }
@@ -198,6 +214,35 @@ public class SkinManager {
 
         // No custom skin for this player
         return originalProfile;
+    }
+
+    /**
+     * Apply skin data directly to a player's GameProfile.
+     * This modifies the profile in-place so the player sees their own skin.
+     */
+    private static void applySkinToProfile(GameProfile profile, SkinFetcher.SkinData skinData) {
+        // Remove existing textures property
+        profile.getProperties().removeAll("textures");
+
+        // Add new skin texture property
+        if (skinData.textureSignature != null) {
+            profile.getProperties().put("textures",
+                new Property("textures", skinData.textureValue, skinData.textureSignature));
+        } else {
+            profile.getProperties().put("textures",
+                new Property("textures", skinData.textureValue));
+        }
+
+        PierceSkinRestorer.LOGGER.debug("Applied skin to GameProfile for " + profile.getName());
+    }
+
+    /**
+     * Clear skin data from a player's GameProfile.
+     * This removes the custom texture property.
+     */
+    private static void clearSkinFromProfile(GameProfile profile) {
+        profile.getProperties().removeAll("textures");
+        PierceSkinRestorer.LOGGER.debug("Cleared skin from GameProfile for " + profile.getName());
     }
 
     /**

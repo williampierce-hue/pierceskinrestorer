@@ -13,7 +13,15 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
+import net.minecraft.network.play.server.S07PacketRespawn;
+import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import net.minecraft.network.play.server.S1DPacketEntityEffect;
+import net.minecraft.network.play.server.S1FPacketSetExperience;
+import net.minecraft.network.play.server.S06PacketUpdateHealth;
+import net.minecraft.network.play.server.S39PacketPlayerAbilities;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldSettings;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -241,6 +249,9 @@ public class SkinPacketHandler {
             return;
         }
 
+        // First, refresh the player's own view of their skin
+        refreshSelfSkin(targetPlayer);
+
         // Get all online players - copy to avoid ConcurrentModificationException
         List<?> playerList;
         synchronized (server.getConfigurationManager().playerEntityList) {
@@ -251,7 +262,7 @@ public class SkinPacketHandler {
             EntityPlayerMP viewer = (EntityPlayerMP) obj;
 
             if (viewer == targetPlayer) {
-                continue; // Skip the target player themselves
+                continue; // Already handled above
             }
 
             // Check if the viewer can see the target (same world, within distance)
@@ -273,5 +284,80 @@ public class SkinPacketHandler {
         }
 
         PierceSkinRestorer.LOGGER.info("Refreshed skin display for " + targetPlayer.getCommandSenderName());
+    }
+
+    /**
+     * Refresh a player's own view of their skin by simulating a respawn.
+     * This sends packets to make the client reload its own skin.
+     */
+    private static void refreshSelfSkin(final EntityPlayerMP player) {
+        try {
+            // Store current state
+            final double x = player.posX;
+            final double y = player.posY;
+            final double z = player.posZ;
+            final float yaw = player.rotationYaw;
+            final float pitch = player.rotationPitch;
+            final int dimension = player.dimension;
+
+            // Get game type
+            WorldSettings.GameType gameType = player.theItemInWorldManager.getGameType();
+
+            // Send respawn packet - this forces client to reload player entity including skin
+            // We send a respawn to a different dimension first, then back to current dimension
+            int fakeDimension = (dimension == 0) ? -1 : 0;
+
+            player.playerNetServerHandler.sendPacket(new S07PacketRespawn(
+                fakeDimension,
+                player.worldObj.difficultySetting,
+                player.worldObj.getWorldInfo().getTerrainType(),
+                gameType
+            ));
+
+            // Now respawn back to the real dimension
+            player.playerNetServerHandler.sendPacket(new S07PacketRespawn(
+                dimension,
+                player.worldObj.difficultySetting,
+                player.worldObj.getWorldInfo().getTerrainType(),
+                gameType
+            ));
+
+            // Restore position
+            player.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(
+                x, y, z, yaw, pitch, false
+            ));
+
+            // Restore player abilities (flying, creative mode, etc.)
+            player.playerNetServerHandler.sendPacket(new S39PacketPlayerAbilities(player.capabilities));
+
+            // Restore health and food
+            player.playerNetServerHandler.sendPacket(new S06PacketUpdateHealth(
+                player.getHealth(),
+                player.getFoodStats().getFoodLevel(),
+                player.getFoodStats().getSaturationLevel()
+            ));
+
+            // Restore experience
+            player.playerNetServerHandler.sendPacket(new S1FPacketSetExperience(
+                player.experience,
+                player.experienceTotal,
+                player.experienceLevel
+            ));
+
+            // Restore active potion effects
+            for (Object effectObj : player.getActivePotionEffects()) {
+                PotionEffect effect = (PotionEffect) effectObj;
+                player.playerNetServerHandler.sendPacket(new S1DPacketEntityEffect(player.getEntityId(), effect));
+            }
+
+            // Update the player's loaded chunks (the respawn clears them)
+            player.mcServer.getConfigurationManager().updateTimeAndWeatherForPlayer(player, player.worldObj);
+            player.mcServer.getConfigurationManager().syncPlayerInventory(player);
+
+            PierceSkinRestorer.LOGGER.debug("Refreshed self skin view for " + player.getCommandSenderName());
+
+        } catch (Exception e) {
+            PierceSkinRestorer.LOGGER.error("Error refreshing self skin for " + player.getCommandSenderName(), e);
+        }
     }
 }
