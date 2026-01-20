@@ -33,7 +33,8 @@ import java.io.File;
     name = PierceSkinRestorer.NAME,
     version = PierceSkinRestorer.VERSION,
     acceptedMinecraftVersions = "[1.7.10]",
-    dependencies = "required-after:Forge@[10.13.4.1614,)"
+    dependencies = "required-after:Forge@[10.13.4.1614,)",
+    acceptableRemoteVersions = "*"  // Server-side only - client doesn't need this mod
 )
 public class PierceSkinRestorer {
 

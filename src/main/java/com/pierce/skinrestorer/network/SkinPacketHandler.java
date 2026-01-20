@@ -154,6 +154,9 @@ public class SkinPacketHandler {
      * Remove our channel handler when a player disconnects.
      */
     public static void removePlayer(EntityPlayerMP player) {
+        if (player == null || player.playerNetServerHandler == null) {
+            return; // Player not fully connected
+        }
         try {
             Channel channel = getChannel(player);
             if (channel != null && channel.pipeline().get("pierceskin_handler") != null) {
