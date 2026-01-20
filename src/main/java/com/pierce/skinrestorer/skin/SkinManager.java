@@ -207,13 +207,9 @@ public class SkinManager {
         // Create new profile with same ID and name
         GameProfile newProfile = new GameProfile(original.getId(), original.getName());
 
-        // Copy existing properties
-        newProfile.getProperties().putAll(original.getProperties());
-
-        // Remove existing textures property
-        newProfile.getProperties().removeAll("textures");
-
         // Add our skin texture property
+        // Note: We only set textures property - this is all that's needed for skin display
+        // Avoiding putAll() due to Guava classloader conflicts in GTNH
         if (skinData.textureSignature != null) {
             newProfile.getProperties().put("textures",
                 new Property("textures", skinData.textureValue, skinData.textureSignature));
