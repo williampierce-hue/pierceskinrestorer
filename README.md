@@ -12,7 +12,7 @@ A **server-side only** Minecraft 1.7.10 Forge mod that restores player skins on 
 
 - **Server-side only** - Players don't need to install anything
 - **Works with vanilla clients** - No client mod required
-- **Instant skin updates** - See your new skin immediately, no rejoin required
+- **Instant skin updates** - Other players see your new skin immediately
 - **Command-based**: `/skin set <username>` to use any Minecraft account's skin
 - **Persistent storage** - Skin preferences survive server restarts
 - **GTNH compatible** - Tested with GregTech: New Horizons 2.8.4
@@ -116,6 +116,7 @@ This mod is designed to be fully compatible with GTNH 2.8.4:
 
 - **Mojang usernames only** - The username must exist on Mojang's servers
 - **No custom URL skins** - Vanilla clients only download from Mojang CDN
+- **Own skin requires rejoin** - Other players see your skin instantly, but you need to rejoin to see your own updated skin (Minecraft limitation)
 
 ## Troubleshooting
 
