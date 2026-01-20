@@ -32,14 +32,21 @@ public class SkinCommand extends CommandBase {
 
     @Override
     public int getRequiredPermissionLevel() {
-        // If requirePermission is true, require OP level 2
-        return ModConfig.requirePermission ? 2 : 0;
+        return 0; // Allow all players to use basic commands
     }
 
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) {
-        // Must be a player and have required permission level
-        return sender instanceof EntityPlayerMP && super.canCommandSenderUseCommand(sender);
+        // Allow any player, or console for admin commands
+        if (sender instanceof EntityPlayerMP) {
+            // If requirePermission is enabled, check for OP
+            if (ModConfig.requirePermission) {
+                return sender.canCommandSenderUseCommand(2, this.getCommandName());
+            }
+            return true; // All players can use basic skin commands
+        }
+        // Console can use admin commands
+        return true;
     }
 
     @Override
@@ -48,8 +55,19 @@ public class SkinCommand extends CommandBase {
             throw new WrongUsageException(getCommandUsage(sender));
         }
 
-        EntityPlayerMP player = (EntityPlayerMP) sender;
         String subCommand = args[0].toLowerCase();
+
+        // Console can only use admin commands
+        if (!(sender instanceof EntityPlayerMP)) {
+            if (args.length >= 3 && args[1].equalsIgnoreCase("set")) {
+                handleAdminSetFromConsole(sender, args);
+            } else {
+                throw new WrongUsageException("Console usage: /skin <player> set <username>");
+            }
+            return;
+        }
+
+        EntityPlayerMP player = (EntityPlayerMP) sender;
 
         if (subCommand.equals("set")) {
             handleSet(player, args);
@@ -163,6 +181,41 @@ public class SkinCommand extends CommandBase {
                 }
             }
         }, "SkinFetcher-Admin").start();
+    }
+
+    private void handleAdminSetFromConsole(final ICommandSender sender, String[] args) {
+        // /skin <player> set <username> - from console
+        String targetPlayerName = args[0];
+        final String targetSkinUsername = args[2];
+
+        final EntityPlayerMP targetPlayer = MinecraftServer.getServer()
+            .getConfigurationManager()
+            .func_152612_a(targetPlayerName); // getPlayerByUsername
+
+        if (targetPlayer == null) {
+            sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Player " + targetPlayerName + " not found"));
+            return;
+        }
+
+        sender.addChatMessage(new ChatComponentText("Setting " + targetPlayerName + "'s skin to " + targetSkinUsername + "..."));
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    boolean success = SkinManager.setSkinByUsername(targetPlayer, targetSkinUsername);
+                    if (success) {
+                        sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Set " + targetPlayer.getCommandSenderName() + "'s skin to " + targetSkinUsername));
+                        sendSuccess(targetPlayer, "Your skin was set to " + targetSkinUsername + " by console");
+                    } else {
+                        sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Failed to fetch skin for " + targetSkinUsername));
+                    }
+                } catch (Exception e) {
+                    PierceSkinRestorer.LOGGER.error("Error setting skin from console", e);
+                    sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Error: " + e.getMessage()));
+                }
+            }
+        }, "SkinFetcher-Console").start();
     }
 
     @Override
