@@ -1,7 +1,6 @@
 # Gradle
 .gradle/
 build/
-gradle/
 
 # IDE
 .idea/
@@ -24,6 +23,6 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Forge
+# Forge build output
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
