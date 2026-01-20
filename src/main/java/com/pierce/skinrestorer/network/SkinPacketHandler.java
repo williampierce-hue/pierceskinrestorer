@@ -125,6 +125,10 @@ public class SkinPacketHandler {
             return;
         }
 
+        if (player == null || player.playerNetServerHandler == null) {
+            return; // Player not fully connected or already disconnected
+        }
+
         try {
             Channel channel = getChannel(player);
             if (channel == null) {
@@ -228,8 +232,8 @@ public class SkinPacketHandler {
      * This respawns the player entity for other clients.
      */
     public static void refreshPlayerSkin(final EntityPlayerMP targetPlayer) {
-        if (targetPlayer == null) {
-            return;
+        if (targetPlayer == null || targetPlayer.playerNetServerHandler == null) {
+            return; // Player disconnected
         }
 
         MinecraftServer server = MinecraftServer.getServer();
