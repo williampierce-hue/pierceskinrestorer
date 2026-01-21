@@ -22,8 +22,10 @@ A **server-side only** Minecraft 1.7.10 Forge mod that restores player skins on 
 When a player sets their skin, the server:
 1. Fetches the skin texture data from Mojang's API
 2. Stores the preference in a JSON file
-3. Injects the skin data into player packets sent to other clients
-4. Vanilla clients automatically display the correct skin
+3. Injects the skin data into player spawn packets sent to other clients
+4. Other players' vanilla clients automatically display the correct skin
+
+**Note:** You will NOT see your own skin change - only other players see your updated skin. This is a Minecraft limitation (your local client renders your own player model using local data, not server packets).
 
 ## Commands
 
@@ -55,7 +57,7 @@ When a player sets their skin, the server:
 3. Restart the server
 4. Done! Players can now use `/skin` command
 
-**Players do NOT need to install anything** - their vanilla clients will see skins automatically.
+**Players do NOT need to install anything** - other players will see their skins automatically.
 
 ## Building from Source
 
@@ -116,7 +118,7 @@ This mod is designed to be fully compatible with GTNH 2.8.4:
 
 - **Mojang usernames only** - The username must exist on Mojang's servers
 - **No custom URL skins** - Vanilla clients only download from Mojang CDN
-- **Own skin requires rejoin** - Other players see your skin instantly, but you need to rejoin to see your own updated skin (Minecraft limitation)
+- **You cannot see your own skin** - Other players see your skin, but you will always see your default skin (Minecraft limitation - your client renders your own model using local data, not server packets)
 
 ## Troubleshooting
 
@@ -136,14 +138,16 @@ Mojang's API has rate limits (~200 requests/minute). If you have many players se
 ## Technical Details
 
 The mod works by:
-1. Intercepting `S0CPacketSpawnPlayer` packets before they're sent
+1. Intercepting `S0CPacketSpawnPlayer` packets before they're sent to other players
 2. Modifying the `GameProfile` to include skin texture properties
-3. The vanilla client receives the modified profile and downloads the skin
+3. Other players' vanilla clients receive the modified profile and download the skin
 
 This approach requires no client-side code because the vanilla Minecraft client already knows how to:
 - Read texture properties from GameProfiles
 - Download skin textures from Mojang's CDN
 - Apply skins to player models
+
+**Why you can't see your own skin:** The spawn packet is only sent when one player appears in another player's view. Your own client never receives a spawn packet for yourself - it uses your local GameProfile directly.
 
 ## License
 
